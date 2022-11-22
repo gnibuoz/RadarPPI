@@ -2,8 +2,11 @@
 
 #include "QCustomPlot.h"
 
-struct VGRadarPPIData;
+struct VGRadarPPIPrivate;
 
+/**
+ * é›·è¾¾PPIæ˜¾ç¤º
+ */
 class VGRadarPPI : public QCustomPlot
 {
 	Q_OBJECT
@@ -12,51 +15,62 @@ public:
 	using DataVector = QVector<qreal>;
 
 	VGRadarPPI(QWidget *parent = Q_NULLPTR);
+
 	~VGRadarPPI();
 
 	/**
-	 * ¸üĞÂÊı¾İ£¬Ö±½Ç×ø±ê
+	 * æ›¿æ¢æ›´æ–°æ•°æ®ï¼Œç›´è§’åæ ‡
 	 */
 	void setData(const DataVector& x, const DataVector& y);
 
 	/**
-	* ÉèÖÃÑÕÉ«
+	 * è¿½åŠ æ›´æ–°æ•°æ®ï¼Œç›´è§’åæ ‡
+	*/
+	void addData(const DataVector& x, const DataVector& y);
+
+	/**
+	* è®¾ç½®é¢œè‰²
 	*/
 	void setColor(const QColor& color);
 
 	/**
-	* ²éÑ¯PÏÔ·¶Î§(m)
+	* æŸ¥è¯¢Pæ˜¾èŒƒå›´(m)
 	*/
 	qreal getRange() const;
 
 	/**
-	* ²éÑ¯PÏÔÉ¨Ãè½ÇËÙ¶È£¨¡ã/s£©
+	* æŸ¥è¯¢Pæ˜¾æ‰«æè§’é€Ÿåº¦ï¼ˆÂ°/sï¼‰
 	*/
 	qreal getSpeed() const;
 
 public Q_SLOTS:
 	/**
-	 * ÉèÖÃPÏÔ·¶Î§(m)
+	 * è®¾ç½®Pæ˜¾èŒƒå›´(m)
 	 */
 	void setRange(qreal range_m);
 
 	/**
-	* ÉèÖÃÉ¨Ãè½ÇËÙ¶È£¨¡ã/s£©
+	* è®¾ç½®Pæ˜¾å½“å‰æ‰«æè§’åº¦
+	*/
+	void setTheta(qreal theta);
+
+	/**
+	* è®¾ç½®æ‰«æè§’é€Ÿåº¦ï¼ˆÂ°/sï¼‰
 	*/
 	void setSpeed(qreal speed_deg_s);
 
 	/**
-	* ¿ªÊ¼É¨Ãè
+	* å¼€å§‹æ‰«æ
 	*/
 	void start();
 
 	/**
-	* ÔİÍ£É¨Ãè
+	* æš‚åœæ‰«æ
 	*/
 	void pause();
 
 	/**
-	* Í£Ö¹É¨Ãè
+	* åœæ­¢æ‰«æ
 	*/
 	void stop();
 
@@ -66,5 +80,5 @@ protected:
 	void timerEvent(QTimerEvent *event) override;
 
 private:
-	VGRadarPPIData *_{ Q_NULLPTR };
+	VGRadarPPIPrivate *_{ Q_NULLPTR };
 };

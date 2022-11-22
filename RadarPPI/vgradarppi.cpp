@@ -1,15 +1,15 @@
 #include "vgradarppi.h"
 #include "QPainter"
-#include "qevent.h"
+#include "QEvent"
 
-struct VGRadarPPIData
+struct VGRadarPPIPrivate
 {
-	VGRadarPPIData()
+	VGRadarPPIPrivate()
 	{
 		dot = QPixmap(":/Resource/dot.png").scaledToWidth(12, Qt::SmoothTransformation);
 	}
 
-	inline QPixmap convertToColor(const QPixmap& background,const QColor& color)
+	inline QPixmap convertToColor(const QPixmap& background, const QColor& color)
 	{
 		auto b = background.toImage();
 		auto ba = b.alphaChannel();
@@ -26,42 +26,42 @@ struct VGRadarPPIData
 	}
 
 	QCPGraph* graph{ nullptr };
-	qreal speed{ 120.0 };		// …®√ËΩ«ÀŸ∂»£¨ƒ¨»œ120°„/s
-	qreal range_m{ 10000.0 };		// ∑∂Œß
+	qreal speed{ 6.0 };				// Êâ´ÊèèËßíÈÄüÂ∫¶ÔºåÈªòËÆ§120¬∞/s
+	qreal range_m{ 10000.0 };		// ËåÉÂõ¥
 
 	QPixmap background{ ":/Resource/background.png" };
 	QPixmap scan{ ":/Resource/scan.png" };
 	QPixmap dot;
 
-	qreal angle{ 0.0 };
+	qreal angle{ 90.0 };
 	QElapsedTimer timer;
 
-	qint32 timerID{-1};
+	qint32 timerID{ -1 };
 };
 
 VGRadarPPI::VGRadarPPI(QWidget *parent)
 	: QCustomPlot(parent)
-	, _(new VGRadarPPIData)
+	, _(new VGRadarPPIPrivate)
 {
-	resize(600,600);
+	resize(600, 600);
 
-	setBackground(_->background);                  //…Ë÷√±≥æ∞Œ™Õ∏√˜…´
-	
+	setBackground(_->background);                  //ËÆæÁΩÆËÉåÊôØ‰∏∫ÈÄèÊòéËâ≤
+
 	setBackgroundScaledMode(Qt::IgnoreAspectRatio);
 
-	setBackground(QColor(0, 0, 0, 255));									  //…Ë÷√ƒ¨»œ±≥æ∞Œ™∫⁄…´
+	setBackground(QColor(0, 0, 0, 255));									  //ËÆæÁΩÆÈªòËÆ§ËÉåÊôØ‰∏∫ÈªëËâ≤
 
 	_->graph = addGraph();
 	_->graph->setLineStyle(QCPGraph::lsNone);
 
 	QCPScatterStyle style(QCPScatterStyle::ssPixmap, 1.0);
-	style.setPixmap(QPixmap(":/Resource/dot.png").scaledToWidth(12,Qt::SmoothTransformation));
+	style.setPixmap(QPixmap(":/Resource/dot.png").scaledToWidth(8, Qt::SmoothTransformation));
 	_->graph->setScatterStyle(style);
 
-	xAxis2->setVisible(false);  // ∂•≤ø◊¯±Í÷·
-	xAxis->setVisible(false);   // µ◊≤ø◊¯±Í÷·
-	yAxis->setVisible(false);   // ◊Û±ﬂ◊¯±Í÷·
-	yAxis2->setVisible(false);  // ”“±ﬂ◊¯±Í÷·
+	xAxis2->setVisible(false);  // È°∂ÈÉ®ÂùêÊ†áËΩ¥
+	xAxis->setVisible(false);   // Â∫ïÈÉ®ÂùêÊ†áËΩ¥
+	yAxis->setVisible(false);   // Â∑¶ËæπÂùêÊ†áËΩ¥
+	yAxis2->setVisible(false);  // Âè≥ËæπÂùêÊ†áËΩ¥
 
 	setRange(10e3);		// 10km
 
@@ -79,10 +79,10 @@ void VGRadarPPI::setData(const DataVector& x, const DataVector& y)
 	Q_ASSERT(x.size() == y.size());
 
 	DataVector xx, yy;
-	for ( auto i = 0; i < x.size(); ++i )
+	for (auto i = 0; i < x.size(); ++i)
 	{
 		auto r = sqrt(x[i] * x[i] + y[i] * y[i]);
-		if ( r > _->range_m * 0.8 )
+		if (r > _->range_m * 0.8)
 			continue;
 
 		xx.push_back(x[i]);
@@ -93,12 +93,35 @@ void VGRadarPPI::setData(const DataVector& x, const DataVector& y)
 	replot(QCustomPlot::rpQueuedReplot);
 }
 
+void VGRadarPPI::addData(const DataVector& x, const DataVector& y)
+{
+	Q_ASSERT(x.size() == y.size());
+
+	DataVector xx, yy;
+	for (auto i = 0; i < x.size(); ++i)
+	{
+		auto r = sqrt(x[i] * x[i] + y[i] * y[i]);
+		if (r > _->range_m * 0.8)
+			continue;
+
+		xx.push_back(x[i]);
+		yy.push_back(y[i]);
+	}
+	_->graph->addData(xx, yy);
+	replot(QCustomPlot::rpQueuedReplot);
+}
+
 void VGRadarPPI::setRange(qreal range_m)
 {
 	_->range_m = range_m;
 	xAxis->setRange(-range_m, range_m);
 	yAxis->setRange(-range_m, range_m);
 	replot(QCustomPlot::rpQueuedReplot);
+}
+
+void VGRadarPPI::setTheta(qreal theta)
+{
+	_->angle = theta;
 }
 
 void VGRadarPPI::setSpeed(qreal speed_deg_s)
@@ -130,14 +153,14 @@ void VGRadarPPI::stop()
 	killTimer(_->timerID);
 	_->timerID = -1;
 
-	_->angle = 0.0;
+	_->angle = -90.0;
 }
 
 void VGRadarPPI::setColor(const QColor& color)
 {
 	_->setColor(color);
 
-	setBackground(_->background);                  //…Ë÷√±≥æ∞Œ™Õ∏√˜…´
+	setBackground(_->background);                  //ËÆæÁΩÆËÉåÊôØ‰∏∫ÈÄèÊòéËâ≤
 
 	QCPScatterStyle style(QCPScatterStyle::ssPixmap, 1.0);
 	style.setPixmap(_->dot);
@@ -164,7 +187,7 @@ void VGRadarPPI::paintEvent(QPaintEvent *event)
 	QPainter p(this);
 	p.translate(width() / 2, height() / 2);
 	p.rotate(_->angle);
-	p.drawPixmap(-width() / 2, -height() / 2, width(), height(),_->scan);
+	p.drawPixmap(-width() / 2, -height() / 2, width(), height(), _->scan);
 
 	_->angle -= _->speed * _->timer.elapsed() / 1000.0;
 
