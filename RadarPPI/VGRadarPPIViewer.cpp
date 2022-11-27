@@ -63,7 +63,7 @@ VGRadarPPIViewer::VGRadarPPIViewer(QWidget *parent)
 			//if (counter++ % 2 == 0)
 			//{
 			//	static int idx = 0;
-			//	static QVector<QColor> clrs{ QColor("#ff6666") ,QColor("#2aff36"), QColor("#ddff21"),QColor("#ffa621"),QColor("#0061ff"),QColor("#00ffb2") };
+			static QVector<QColor> clrs{ QColor("#ff6666") ,QColor("#2aff36"), QColor("#ddff21"),QColor("#ffa621"),QColor("#0061ff"),QColor("#00ffb2") };
 			//	ui->widget->setColor(clrs[idx++ % clrs.size()]);			// ²âÊÔÑÕÉ«±ä»¯
 			//}
 
